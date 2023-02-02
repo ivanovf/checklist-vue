@@ -1,16 +1,49 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <Suspense>
+    <template #default>
+      <Login @submit="onLogin" v-if="!token"/>
+      <Home v-else/>
+    </template>
+    <template #fallback>
+      <SplashScreen/>
+    </template>
+  </Suspense>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import SplashScreen from "@/components/SplashScreen.vue";
+
+import { defineAsyncComponent } from "vue";
+import Home from "./components/Home.vue";
 
 export default {
   name: 'App',
   components: {
-    HelloWorld
+    SplashScreen,
+    Login: defineAsyncComponent(() => {
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                resolve(import("./components/Login.vue"));
+            }, 2500);
+        });
+    }),
+    Home: Home
+  },
+  methods: {
+    onLogin: function (token) {
+      this.token = token;
+      localStorage.setItem('token', token);
+    }
+  },
+  data: function () {
+    return {
+      token: null
+    }
+  },
+  mounted() {
+    this.token = localStorage.getItem('token') ?? null; 
   }
+
 }
 </script>
 
@@ -21,6 +54,9 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
+}
+* {
+  --brand-green: #04b500;
+  --brand-blue: #0689b0;
 }
 </style>
